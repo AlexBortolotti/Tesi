@@ -84,5 +84,3 @@ susc = R0*((initE')./((tau/gammaA)*(1-prob_symp).*initS'.*(cont_mat*initE'.*(1-p
 % susc2 = R0*((initI')./((cont_mat*initA').*initS'.*(1-prob_symp).*tau));
 
 save tester
-
-'test'
