@@ -12,7 +12,7 @@ k = (table2array(data_table(firstDay,2))-sum(initI))/sum(initA);
 %Infecteds + correction for detected asymptomatics
 inf_asy_corr = y(:,2*6+(1:6))+k*y(:,3*6+(1:6));
 plot(t,sum(inf_asy_corr,2));
-title('Tester')
+title('I+A vs Data')
 hold on
 %Real data comparison
 y_real = table2array(data_table(firstDay:firstDay+simulength,2));
@@ -24,6 +24,11 @@ t_max_mod=t(t_max_mod);
 [~, t_max_data] = max(y_real);
 t_max_data = t_max_data+firstDay;
 t_peak = [t_max_mod; t_max_data];
+
+figure
+plot(t,inf_asy_corr);
+title('Age-stratified graph')
+legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
 
 T = table(models, t_peak);
 disp(T)
