@@ -32,3 +32,30 @@ legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
 
 T = table(models, t_peak);
 disp(T)
+
+%%%%%%%%%%%HEATMAPS PRINTS%%%
+
+% figure
+% heatmap(k_italy, 'ColorMap',jet)
+% title('Standard')
+% figure
+% heatmap(k_italy_school, 'ColorMap',jet)
+% title('Scuole')
+% figure
+% heatmap(k_italy_work, 'ColorMap',jet)
+% title('Lavoro')
+% figure
+% heatmap(k_italy_others, 'ColorMap',jet)
+% title("Altri")
+% figure
+% heatmap(k_italy_home, 'ColorMap',jet)
+% title('Casa')
+% figure
+% heatmap(k_italy-k_italy_school, 'ColorMap',jet)
+% title('Scuole chiuse')
+% figure
+% heatmap(k_italy-k_italy_school-k_italy_others, 'ColorMap',jet)
+% title('Scuole e altri chiusi')
+
+%%%%%%%%%%%AUTOMATIC FIGURES ARRANGING%%%
+autoArrangeFigures()

@@ -3,13 +3,22 @@ data_management
 
 %%%%%%%%%%%DEMOGRAPHIC DATA%%%
 
-%Lombardy age-stratified population
-N = readtable('Lombardia-2020.csv');
-% N = readtable('Emilia-2020.csv');
-%Seroprevalance Lombardy
-seroprev = 754331;
-%Seroprevalence Emilia
-% seroprev = 124458;
+%Switcher. Lombardia = 3; Emilia = 8;
+
+
+n = input("Region to simulate: Lombardy = 3; Emilia-Romagna = 8");
+
+switch n
+    case 3
+        N = readtable('Lombardia-2020.csv');
+        seroprev = 754331;
+        R0 = 2.09;
+    case 8
+        N = readtable('Emilia-2020.csv');
+        seroprev = 124458;
+        R0 = 1.67;
+end
+
 prem_bds = [0:5:75 105];
 istat_bds = [0, 20, 35, 50, 60, 70, 105];
 pyramid = table2array(N(:,2));
@@ -20,8 +29,6 @@ simulength = 80;
 % firstDay = 227; %8th Oct
 firstDay = 239; %20th Oct
 sieroDay = 142;
-%R0 per settimana 12-19 da report ISS
-R0 = 1.67;
 
 %%%%%%%%%%%INITIAL VALUES%%%
 
@@ -41,12 +48,12 @@ initS = agg_istat_pyr' - (initE + initI + initA + initR);
 %%%%%%%%%%%PARAMETERS%%%
 
 %Contact matrix and age structure
-k_italy = table2array(readtable('contact_matrices_2020/contact_ita_all.csv')); % Load contact matrix with 16 age classes. Prem et al. 2017
-% k_italy_work = table2array(readtable('contact_matrices_2020/contact_ita_work.csv'));
-% k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
-% k_italy_other = table2array(readtable('contact_matrices_2020/contact_ita_other.csv'));
-% k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
-% k_italy = k_italy_work + k_italy_home + k_italy_other;
+% k_italy = table2array(readtable('contact_matrices_2020/contact_ita_all.csv')); % Load contact matrix with 16 age classes. Prem et al. 2017
+k_italy_work = (1/2)*table2array(readtable('contact_matrices_2020/contact_ita_work.csv'));
+k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
+k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
+k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
+k_italy = k_italy_work + k_italy_home + k_italy_others;
 
 %Exit rate from latent state
 delta_E = 0.52;
@@ -79,8 +86,8 @@ gammaI = (1/(eta_cat + gamma_cat + alpha_cat))*(gamma_cat^2 + eta_cat*(zeta_cat*
 gammaA = 0.1397;
 
 %Susceptibility constants fitting
-% susc = [0.007 0.045 0.07 0.15 0.377 0.52]';  
-susc = R0*((initE')./((tau/gammaA)*(1-prob_symp).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
+susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp)*(1/2);  
+% susc = R0*((initE')./((tau/gammaA)*(1-prob_symp).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
 % susc2 = R0*((initI')./((cont_mat*initA').*initS'.*(1-prob_symp).*tau));
 
 save tester
