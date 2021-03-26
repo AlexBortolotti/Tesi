@@ -6,7 +6,8 @@ data_management
 %Switcher. Lombardia = 3; Emilia = 8;
 
 
-n = input("Region to simulate: Lombardy = 3; Emilia-Romagna = 8");
+% n = input("Region to simulate: Lombardy = 3; Emilia-Romagna = 8");
+n=3;
 
 switch n
     case 3
@@ -25,14 +26,18 @@ pyramid = table2array(N(:,2));
 agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 
 %%%%%%%%%%%TIME INITIALIZATION%%%
-simulength = 80;
+simulength = 7; %timespan of pre-lockdown measures
+simulength_lock = 100 - simulength; %timespan of lockdown measures
+firstDay = 224;
 % firstDay = 227; %8th Oct
-firstDay = 239; %20th Oct
+% firstDay = 239; %20th Oct
+% firstDay = 366; %24th Feb 21
+firstDay_lock = firstDay + simulength;
 sieroDay = 142;
 
 %%%%%%%%%%%INITIAL VALUES%%%
 
-%ISS data 8 Oct
+%ISS Data
 initI = (table2array(data_table(firstDay,2))*0.372)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
 initA = initI.*(1./(1 - [0.1809 0.2279 0.3134 0.398 0.3980 0.8291]));
 %Estimation of new infections after latent period estimate by Gatto et al
@@ -47,13 +52,28 @@ initS = agg_istat_pyr' - (initE + initI + initA + initR);
 
 %%%%%%%%%%%PARAMETERS%%%
 
-%Contact matrix and age structure
+%Age structured contact matrix on 20th Oct
 % k_italy = table2array(readtable('contact_matrices_2020/contact_ita_all.csv')); % Load contact matrix with 16 age classes. Prem et al. 2017
-k_italy_work = (1/2)*table2array(readtable('contact_matrices_2020/contact_ita_work.csv'));
+k_italy_work = (1/20)*table2array(readtable('contact_matrices_2020/contact_ita_work.csv'));
 k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
-k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
-k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
-k_italy = k_italy_work + k_italy_home + k_italy_others;
+k_italy_others = (1/40)*table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
+k_italy_school = (1/20)*table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
+k_italy = k_italy_work + k_italy_home + k_italy_school + k_italy_others;
+
+%Age structured contact matrix after lockdown
+%Scaling factor due high-schools closing
+scalar = ones(16);
+scalar(3,3) = scalar(3,3)*(1/10);
+scalar(4,4) = scalar(4,4)*(1/15);
+scalar(2,2) = scalar(2,2)*(1/10);
+k_italy_school = k_italy_school.*scalar;
+% k_italy_school = 0;
+%Scaling factor for in-home reduction of contacts
+scalar = ones(16)*0.5;
+scalar = scalar + diag(ones(1,16)*0.5);
+k_italy_home = scalar.*k_italy_home;
+k_italy_lock = k_italy_work + k_italy_home + k_italy_school;
+% k_italy_lock = k_italy_lock*0.9;
 
 %Exit rate from latent state
 delta_E = 0.52;
@@ -68,8 +88,10 @@ tau=1/2;
 %population distribution to obtain contact coefficients and aggregate it
 %w.r.t. appropriate bds)
 % cont_mat = [1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1];
-cont_mat_test = aggregate_contact_matrix(k_italy, prem_bds, istat_bds, pyramid);
-cont_mat = dis_coeff(cont_mat_test,agg_istat_pyr);
+cont_mat = aggregate_contact_matrix(k_italy, prem_bds, istat_bds, pyramid);
+cont_mat = dis_coeff(cont_mat,agg_istat_pyr);
+cont_mat_lock = aggregate_contact_matrix(k_italy_lock, prem_bds, istat_bds, pyramid);
+cont_mat_lock = dis_coeff(cont_mat_lock, agg_istat_pyr);
 
 %Probability of developing symptoms by FBK estimates
 prob_symp = [0.1809 0.2279 0.3134 0.398 0.398 0.8291]';
@@ -86,8 +108,8 @@ gammaI = (1/(eta_cat + gamma_cat + alpha_cat))*(gamma_cat^2 + eta_cat*(zeta_cat*
 gammaA = 0.1397;
 
 %Susceptibility constants fitting
-susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp)*(1/2);  
-% susc = R0*((initE')./((tau/gammaA)*(1-prob_symp).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
+% susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp);  
+susc = R0*((initE')./((tau/gammaA)*(1-prob_symp).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
 % susc2 = R0*((initI')./((cont_mat*initA').*initS'.*(1-prob_symp).*tau));
 
 save tester

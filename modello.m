@@ -1,4 +1,4 @@
-function [tspanned,result,tspan] = modello(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay)
+function [tspanned,result,tspan,refin] = modello(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay)
 %Function that handles the model
 
 
@@ -7,8 +7,9 @@ y0 = [initS, initE, initI, initA, initR]';
 
 %Timespan of the dynamics
 tspan = firstDay:firstDay+simulength;
-%Refining mesh adding refin-1 points every two tspan points
-tspanned = refin_tspan(tspan, 3);
+%Refining mesh adding refin points every two tspan points
+refin = 3;
+tspanned = refin_tspan(tspan, refin);
 
 [tspanned,result] = ode45(@(t,y)odefun(t,y), tspanned, y0);
 

@@ -1,34 +1,47 @@
 clear all
 load tester
-[t,y,t_short] = modello(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay);
+
+[t,y,t_short,refin] = modello(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay);
+
+lastDay = simulength*refin + simulength + 1;
+initS_lock = y(lastDay,1:6);
+initE_lock = y(lastDay,7:12);
+initI_lock = y(lastDay,13:18);
+initA_lock = y(lastDay,19:24);
+initR_lock = y(lastDay,25:30);
+
+[t_lock,y_lock,t_short_lock] = modello(simulength_lock, susc, cont_mat_lock, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock, initE_lock, initI_lock, initA_lock, initR_lock, firstDay_lock);
+
 figure
-tiledlayout('flow')
+% tiledlayout('flow')
 % nexttile
 % plot(t,y(:,2*6+(1:6)));
 % title('Lombardy | I | Prem 2017 work cont. matr. + starting October 9') 
 % legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
-nexttile
+% nexttile
+%Infecteds + correction for detected asymptomatics plot
 k = (table2array(data_table(firstDay,2))-sum(initI))/sum(initA);
-%Infecteds + correction for detected asymptomatics
 inf_asy_corr = y(:,2*6+(1:6))+k*y(:,3*6+(1:6));
-plot(t,sum(inf_asy_corr,2));
+inf_asy_corr_lock = y_lock(:,2*6+(1:6))+k*y_lock(:,3*6+(1:6));
+plot([t; t_lock],sum([inf_asy_corr; inf_asy_corr_lock],2));
 title('I+A vs Data')
 hold on
 %Real data comparison
-y_real = table2array(data_table(firstDay:firstDay+simulength,2));
-scatter(t_short,y_real)
+y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock,2));
+scatter([t_short t_short_lock(2:end)],y_real)
+
+% figure
+% plot(t,inf_asy_corr);
+% title('Age-stratified graph')
+% legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
 
 models = {'Models'; 'Data'};
-[~, t_max_mod] = max(sum(inf_asy_corr,2));
-t_max_mod=t(t_max_mod);
+[~, t_max_mod] = max(sum([inf_asy_corr; inf_asy_corr_lock],2));
+t_tot = [t;t_lock];
+t_max_mod=t_tot(t_max_mod);
 [~, t_max_data] = max(y_real);
 t_max_data = t_max_data+firstDay;
 t_peak = [t_max_mod; t_max_data];
-
-figure
-plot(t,inf_asy_corr);
-title('Age-stratified graph')
-legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
 
 T = table(models, t_peak);
 disp(T)
@@ -56,6 +69,11 @@ disp(T)
 % figure
 % heatmap(k_italy-k_italy_school-k_italy_others, 'ColorMap',jet)
 % title('Scuole e altri chiusi')
+
+%%%%%%%%%%%INITIAL VALUES TESTING%%%
+% initL = [initS; initE; initI; initA; initR];
+% initER = [initS; initE; initI; initA; initR];
+
 
 %%%%%%%%%%%AUTOMATIC FIGURES ARRANGING%%%
 autoArrangeFigures()
