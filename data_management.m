@@ -1,5 +1,5 @@
-csv_url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv";
-websave('region.csv',csv_url);
+% csv_url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv";
+% websave('region.csv',csv_url);
 
 LOMBARDIA = 3;
 EMILIA = 8;

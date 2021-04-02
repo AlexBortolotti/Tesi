@@ -30,10 +30,10 @@ hold on
 y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock,2));
 scatter([t_short t_short_lock(2:end)],y_real)
 
-% figure
-% plot(t,inf_asy_corr);
-% title('Age-stratified graph')
-% legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
+figure
+plot([t; t_lock],[inf_asy_corr; inf_asy_corr_lock]);
+title('Age-stratified graph')
+legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
 
 models = {'Models'; 'Data'};
 [~, t_max_mod] = max(sum([inf_asy_corr; inf_asy_corr_lock],2));

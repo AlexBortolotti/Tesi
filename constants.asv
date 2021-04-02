@@ -108,11 +108,12 @@ eta_cat = 0.02469;
 %arithmetical average.
 zeta_cat = sum(prob_symp)/length(prob_symp); 
 gammaI = (1/(eta_cat + gamma_cat + alpha_cat))*(gamma_cat^2 + eta_cat*(zeta_cat*gamma_cat + (1-zeta_cat)*(gamma_cat+alpha_cat))+alpha_cat^2);
+% gammaI = 0.0698;
 gammaA = 0.1397;
 
 %Susceptibility constants fitting
 % susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp);  
-% initS=initS.*(rand(1,6)*0.2);
 susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
+% susc2 = R0*((initI')./((cont_mat*initA').*initS'.*(1-prob_symp).*tau));
 
 save tester
