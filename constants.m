@@ -26,10 +26,10 @@ agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 
 %%%%%%%%%%%TIME INITIALIZATION%%%
 simulength = 7; %timespan of pre-lockdown measures
-simulength_lock = 73 - simulength; %timespan of lockdown measures
+simulength_lock = 30 - simulength; %timespan of lockdown measures
 % firstDay = 224;
-% firstDay = 227; %8th Oct
-firstDay = 239; %20th Oct
+firstDay = 227; %8th Oct
+% firstDay = 239; %20th Oct
 % firstDay = 366; %24th Feb 21
 firstDay_lock = firstDay + simulength;
 sieroDay = 142;
@@ -57,7 +57,9 @@ k_italy_work = table2array(readtable('contact_matrices_2020/contact_ita_work.csv
 k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
 k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
 k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
-k_italy = k_italy_work + k_italy_home;
+k_italy = k_italy_home + k_italy_work;
+% k_italy = zeros(16);
+k_italy = k_italy/100;
 
 %Age structured contact matrix after lockdown
 %Scaling factor due high-schools closing
@@ -111,8 +113,13 @@ gammaI = (1/(eta_cat + gamma_cat + alpha_cat))*(gamma_cat^2 + eta_cat*(zeta_cat*
 gammaA = 0.1397;
 
 %Susceptibility constants fitting
-% susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp);  
+% susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp)*(1/2);  
 % initS=initS.*(rand(1,6)*0.2);
-susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
+% susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
+%TEST as Hilton-Keeling, rho = susc
+susc = (R0*((initI')./((cont_mat.*initS')*initI')))./prob_symp;
+
+infos = "Susceptibility Simulation: results vary with choice of susceptibility. \n This test is with LITERATURE susceptibility.";
+infos = compose(infos);
 
 save tester

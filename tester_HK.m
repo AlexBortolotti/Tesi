@@ -2,7 +2,7 @@ clear all
 % load('simulations/simul_susc_fit.mat')
 load tester
 
-[t,y,t_short,refin] = modello(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay);
+[t,y,t_short,refin] = modello_HK(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay);
 
 lastDay = simulength*refin + simulength + 1;
 initS_lock = y(lastDay,1:6);
@@ -11,7 +11,7 @@ initI_lock = y(lastDay,13:18);
 initA_lock = y(lastDay,19:24);
 initR_lock = y(lastDay,25:30);
 
-[t_lock,y_lock,t_short_lock] = modello(simulength_lock, susc, cont_mat_lock, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock, initE_lock, initI_lock, initA_lock, initR_lock, firstDay_lock);
+[t_lock,y_lock,t_short_lock] = modello_HK(simulength_lock, susc, cont_mat_lock, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock, initE_lock, initI_lock, initA_lock, initR_lock, firstDay_lock);
 
 figure
 % tiledlayout('flow')
