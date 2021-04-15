@@ -1,6 +1,5 @@
-function [tspanned,result,tspan,refin] = modello(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay)
+function [tspanned,result,tspan,refin] = model_HK(simulength, susc, cont_mat, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay)
 %Function that handles the model
-
 
 %Initial conditions vector
 y0 = [initS, initE, initI, initA, initR]';
@@ -18,9 +17,9 @@ function dydt = odefun(t,y)
     dim = length(y);
     dydt=zeros(dim,1);
     %Susceptible dynamics
-    dydt(1:6) = -susc.*(cont_mat.*y(1:6)*(y(2*6 + (1:6))+0.*y(3*6 + (1:6))));
+    dydt(1:6) = -susc.*((cont_mat.*y(1:6))*(y(2*6 + (1:6))+0.*y(3*6 + (1:6))));
     %Latent dynamics
-    dydt(6 + (1:6)) = susc.*(cont_mat.*y(1:6)*(0.*y(2*6 + (1:6))+0.*y(3*6 + (1:6)))) - delta_E*y(1*6+(1:6));
+    dydt(6 + (1:6)) = susc.*((cont_mat.*y(1:6))*(y(2*6 + (1:6))+0.*y(3*6 + (1:6)))) - delta_E*y(1*6+(1:6));
     %Infecteds dynamics
     dydt(2*6 + (1:6)) = delta_E*prob_symp.*y(1*6 + (1:6)) - gammaI*y(2*6 + (1:6));
     %Asymptomatic dynamics

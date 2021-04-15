@@ -59,7 +59,7 @@ k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others
 k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
 k_italy = k_italy_home + k_italy_work;
 % k_italy = zeros(16);
-k_italy = k_italy/100;
+% k_italy = k_italy/100;
 
 %Age structured contact matrix after lockdown
 %Scaling factor due high-schools closing
@@ -116,7 +116,7 @@ gammaA = 0.1397;
 % susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp)*(1/2);  
 % initS=initS.*(rand(1,6)*0.2);
 % susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
-%TEST as Hilton-Keeling, rho = susc
+%TEST as Hilton-Keeling
 susc = (R0*((initI')./((cont_mat.*initS')*initI')))./prob_symp;
 
 infos = "Susceptibility Simulation: results vary with choice of susceptibility. \n This test is with LITERATURE susceptibility.";
