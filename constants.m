@@ -62,19 +62,19 @@ k_italy = k_italy_home + k_italy_work;
 % k_italy = k_italy/100;
 
 %Age structured contact matrix after lockdown
-%Scaling factor due high-schools closing
-scalar = ones(16);
-scalar(3,3) = scalar(3,3)*(1/10);
-scalar(4,4) = scalar(4,4)*(1/15);
-scalar(2,2) = scalar(2,2)*(1/10);
-k_italy_school = k_italy_school.*scalar;
-% k_italy_school = 0;
-%Scaling factor for in-home reduction of contacts
-scalar = ones(16)*0.5;
-scalar = scalar + diag(ones(1,16)*0.5);
-k_italy_home = scalar.*k_italy_home;
-k_italy_lock = k_italy_work + k_italy_home + k_italy_school;
-% k_italy_lock = k_italy_lock*0.9;
+% %Scaling factor due high-schools closing
+% scalar = ones(16);
+% scalar(3,3) = scalar(3,3)*(1/10);
+% scalar(4,4) = scalar(4,4)*(1/15);
+% scalar(2,2) = scalar(2,2)*(1/10);
+% k_italy_school = k_italy_school.*scalar;
+% % k_italy_school = 0;
+% %Scaling factor for in-home reduction of contacts
+% scalar = ones(16)*0.5;
+% scalar = scalar + diag(ones(1,16)*0.5);
+% k_italy_home = scalar.*k_italy_home;
+% k_italy_lock = k_italy_work + k_italy_home + k_italy_school;
+% % k_italy_lock = k_italy_lock*0.9;
 
 % Contact matrix by Prem (UPDATED: Prem et al is aggregated contact matrix +
 %susceptible population, so we disaggregate the contact matrix from the
