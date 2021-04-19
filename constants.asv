@@ -28,8 +28,8 @@ agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 simulength = 7; %timespan of pre-lockdown measures
 simulength_lock = 30 - simulength; %timespan of lockdown measures
 % firstDay = 224;
-% firstDay = 227; %8th Oct
-firstDay = 239; %20th Oct
+firstDay = 227; %8th Oct
+% firstDay = 239; %20th Oct
 % firstDay = 366; %24th Feb 21
 firstDay_lock = firstDay + simulength;
 sieroDay = 142;
@@ -52,12 +52,14 @@ initS = agg_istat_pyr' - (initE + initI + initA + initR);
 %%%%%%%%%%%PARAMETERS%%%
 
 %Age structured contact matrix on 20th Oct
-% k_italy = table2array(readtable('contact_matrices_2020/contact_ita_all.csv')); % Load contact matrix with 16 age classes. Prem et al. 2017
+k_italy = table2array(readtable('contact_matrices_2020/contact_ita_all.csv')); % Load contact matrix with 16 age classes. Prem et al. 2017
 k_italy_work = table2array(readtable('contact_matrices_2020/contact_ita_work.csv'));
 k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
 k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
 k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
-k_italy = k_italy_home + k_italy_work;
+% k_italy = k_italy_home + k_italy_work + k_italy_school;
+% k_italy = zeros(16);
+% k_italy = k_italy/100;
 
 %Age structured contact matrix after lockdown
 % %Scaling factor due high-schools closing
@@ -66,18 +68,19 @@ k_italy = k_italy_home + k_italy_work;
 % scalar(4,4) = scalar(4,4)*(1/15);
 % scalar(2,2) = scalar(2,2)*(1/10);
 % k_italy_school = k_italy_school.*scalar;
-% k_italy_school = 0;
-%Scaling factor for in-home reduction of contacts
+% % k_italy_school = 0;
+% %Scaling factor for in-home reduction of contacts
 % scalar = ones(16)*0.5;
 % scalar = scalar + diag(ones(1,16)*0.5);
 % k_italy_home = scalar.*k_italy_home;
 % k_italy_lock = k_italy_work + k_italy_home + k_italy_school;
-% k_italy_lock = k_italy_lock*0.9;
+% % k_italy_lock = k_italy_lock*0.9;
 
 % Contact matrix by Prem (UPDATED: Prem et al is aggregated contact matrix +
 %susceptible population, so we disaggregate the contact matrix from the
 %population distribution to obtain contact coefficients and aggregate it
 %w.r.t. appropriate bds)
+% cont_mat = [1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1; 1,1,1,1,1,1];
 cont_mat = aggregate_contact_matrix(k_italy, prem_bds, istat_bds, pyramid);
 cont_mat = dis_coeff(cont_mat,agg_istat_pyr);
 % cont_mat_lock = aggregate_contact_matrix(k_italy_lock, prem_bds, istat_bds, pyramid);
@@ -109,14 +112,12 @@ zeta_cat = sum(prob_symp)/length(prob_symp);
 gammaI = (1/(eta_cat + gamma_cat + alpha_cat))*(gamma_cat^2 + eta_cat*(zeta_cat*gamma_cat + (1-zeta_cat)*(gamma_cat+alpha_cat))+alpha_cat^2);
 gammaA = 0.1397;
 
-%Susceptibility Hilton-Keeling
-susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp); 
-
-%OLD (ARCHIVE)
+%Susceptibility constants fitting
+% susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp)*(1/2);  
 % initS=initS.*(rand(1,6)*0.2);
 % susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
 %TEST as Hilton-Keeling
-% susc = (R0*((initI')./((cont_mat.*initS')*(initI'./agg_istat_pyr))))./prob_symp;
+susc = (R0*((initI')./((cont_mat.*initS')*initI')))./prob_symp;
 
 infos = "Susceptibility Simulation: results vary with choice of susceptibility. \n This test is with LITERATURE susceptibility.";
 infos = compose(infos);
