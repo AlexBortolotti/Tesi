@@ -7,7 +7,7 @@ y0 = [initS, initE, initI, initA, initR]';
 
 %Timespan of the dynamics
 tspan = firstDay:firstDay+simulength;
-%Refining mesh adding refin points every two tspan points
+%Refining mesh adding "refin" points every two tspan points
 refin = 3;
 tspanned = refin_tspan(tspan, refin);
 

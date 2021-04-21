@@ -1,5 +1,8 @@
 clear all
+%SIMULATION LOAD
 load tester
+
+%SIMULATION RUN
 
 [t,y,t_short,refin] = model(simulength, susc, cont_mat, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay);
 
@@ -12,39 +15,67 @@ initR_lock = y(lastDay,25:30);
 
 [t_lock,y_lock,t_short_lock] = model(simulength_lock, susc, cont_mat_lock, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock, initE_lock, initI_lock, initA_lock, initR_lock, firstDay_lock);
 
-figure
-% tiledlayout('flow')
-% nexttile
-% plot(t,y(:,2*6+(1:6)));
-% title('Lombardy | I | Prem 2017 work cont. matr. + starting October 9') 
-% legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
-% nexttile
 %Infecteds + correction for detected asymptomatics plot
 k = (table2array(data_table(firstDay,2))-sum(initI))/sum(initA);
 inf_asy_corr = y(:,2*6+(1:6))+k*y(:,3*6+(1:6));
 inf_asy_corr_lock = y_lock(:,2*6+(1:6))+k*y_lock(:,3*6+(1:6));
-plot([t; t_lock],sum([inf_asy_corr; inf_asy_corr_lock],2));
-title('Infected + Asymptomatics')
+
+% plot([t; t_lock],sum([inf_asy_corr; inf_asy_corr_lock],2));
+% title('Infected + Asymptomatics')
+% hold on
+% %Real data comparison
+% y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock,2));
+% scatter([t_short t_short_lock(2:end)],y_real)
+% legend({'Model', 'Data'},'Location', 'northeast');
+
+%DATE TIMING
+date_t = datetime(2021,02,24) + caldays(firstDay-1);
+date_t = date_t + caldays(0:(simulength + simulength_lock-1));
+refin = fix(length(t)/length(t_short));
+inf_asy_corr = inf_asy_corr(refin*((t_short(1:end-1) - firstDay + 1)-1)+1,:);
+inf_asy_corr_lock  = inf_asy_corr_lock(refin*((t_short_lock(1:end-1) - firstDay_lock + 1)-1)+1,:);
+
+%PLOT SIMULATION
+subplot(2,2,1:2)
+% tiledlayout('flow')
+
+% nexttile
+plot(date_t',sum([inf_asy_corr; inf_asy_corr_lock],2));
+% title('Infected + Asymptomatics')
 hold on
-%Real data comparison
-y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock,2));
-scatter([t_short t_short_lock(2:end)],y_real)
-legend({'Model', 'Data'},'Location', 'northeast');
 
-figure
-plot([t; t_lock],[inf_asy_corr; inf_asy_corr_lock]);
-title('Age-stratified graph')
-legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','southwest')
+%PLOT REAL DATA
+y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock - 1,2));
+scatter(date_t,y_real)
+legend({'Model', 'Data'},'Location', 'northwest');
 
-models = {'Models'; 'Data'};
-[~, t_max_mod] = max(sum([inf_asy_corr; inf_asy_corr_lock],2));
-t_tot = [t;t_lock];
+%PLOT HEATMAP USED IN SIMULATION
+subplot(2,2,3)
+h = heatmap(k_italy);
+h.YDisplayData = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+% title('Schools')
+xlabel('Age group of individual')
+ylabel('Age group of contact')
+
+%PLOT AGE-STRATIFIED DATA
+subplot(2,2,4)
+% nexttile
+plot(date_t,[inf_asy_corr; inf_asy_corr_lock]);
+% title('Age-stratified graph')
+legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','northwest')
+
+%PEAK SIZE AND PEAK TIME TABLE
+Simulation_type = {'Model'; 'Data'};
+[peak_mod, t_max_mod] = max(sum([inf_asy_corr; inf_asy_corr_lock],2));
+t_tot = [t_short(1:end-1)';t_short_lock(1:end-1)'];
 t_max_mod=t_tot(t_max_mod);
-[~, t_max_data] = max(y_real);
+[peak_data, t_max_data] = max(y_real);
 t_max_data = t_max_data+firstDay;
-t_peak = [t_max_mod; t_max_data];
+Peak_Size = [fix(peak_mod); peak_data];
+Peak_Time = [datetime(2020,02,24) + caldays(fix(t_max_mod)); datetime(2020,02,24) + caldays(t_max_data)];
 
-T = table(models, t_peak);
+% nexttile
+T = table(Simulation_type, Peak_Size, Peak_Time);
 disp(T)
 
 %%%%%%%%%%%HEATMAPS PRINTS%%%
@@ -146,4 +177,4 @@ disp(T)
 
 
 %%%%%%%%%%%AUTOMATIC FIGURES ARRANGING%%%
-autoArrangeFigures()
+% autoArrangeFigures()

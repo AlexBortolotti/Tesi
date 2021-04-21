@@ -26,7 +26,7 @@ agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 
 %%%%%%%%%%%TIME INITIALIZATION%%%
 simulength = 7; %timespan of pre-lockdown measures
-simulength_lock = 50 - simulength; %timespan of lockdown measures
+simulength_lock = 60 - simulength; %timespan of lockdown measures
 % firstDay = 224;
 % firstDay = 227; %8th Oct
 firstDay = 239; %20th Oct
@@ -60,7 +60,7 @@ k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school
 k_italy = k_italy_home;
 
 %Age structured contact matrix after lockdown
-% %Scaling factor due high-schools closing
+%Scaling factor due high-schools closing
 % scalar = ones(16);
 % scalar(3,3) = scalar(3,3)*(1/10);
 % scalar(4,4) = scalar(4,4)*(1/15);
@@ -73,6 +73,7 @@ k_italy = k_italy_home;
 % k_italy_home = scalar.*k_italy_home;
 % k_italy_lock = k_italy_work + k_italy_home + k_italy_school;
 % k_italy_lock = k_italy_lock*0.9;
+% k_italy = k_italy_home + k_italy_school;
 
 % Contact matrix by Prem (UPDATED: Prem et al is aggregated contact matrix +
 %susceptible population, so we disaggregate the contact matrix from the
@@ -112,13 +113,13 @@ gammaA = 0.1397;
 %Susceptibility Hilton-Keeling
 susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp); 
 
-%OLD (ARCHIVE)
+%OLD/ARCHIVE
 % initS=initS.*(rand(1,6)*0.2);
 % susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
 %TEST as Hilton-Keeling
 % susc = (R0*((initI')./((cont_mat.*initS')*(initI'./agg_istat_pyr))))./prob_symp;
 
-infos = "Susceptibility Simulation: results vary with choice of susceptibility. \n This test is with LITERATURE susceptibility.";
+infos = "STANDARD. Only home contacts";
 infos = compose(infos);
 
 save tester
