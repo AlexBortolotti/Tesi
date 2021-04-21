@@ -1,4 +1,5 @@
 clear all
+% load('simulations/simul_susc_fit.mat')
 load tester
 
 [t,y,t_short,refin] = model(simulength, susc, cont_mat, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS, initE, initI, initA, initR, firstDay);
@@ -125,8 +126,7 @@ disp(T)
 % xlabel('Age group of individual')
 % ylabel('Age group of contact')
 % 
-% %Mild measures: reduced school contact by 80% and work contact by 90%,
-% %others locations' contact set to 0.
+% %Mild measures: mandatory masks and reduced non-work contacts
 % nexttile
 % K = k_italy_home + k_italy_school/5 + k_italy_work/10;
 % h = heatmap(K);
@@ -136,8 +136,10 @@ disp(T)
 % ylabel('Age group of contact')
 % 
 % %Strong lockdown: schools closed, almost every workplace closed, reduced home contact and other locations contact
-% nexttile;
-% K = k_italy_home/2 + k_italy_others/10 + k_italy_work/10;
+% nexttile
+% scalar = ones(16)*0.5;
+% scalar = scalar + diag(ones(1,16)*0.5);
+% K = scalar.*k_italy_home + k_italy_others/10 + k_italy_work/10;
 % h = heatmap(K);
 % h.YDisplayData = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 % title('(F)')

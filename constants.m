@@ -26,7 +26,7 @@ agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 
 %%%%%%%%%%%TIME INITIALIZATION%%%
 simulength = 7; %timespan of pre-lockdown measures
-simulength_lock = 30 - simulength; %timespan of lockdown measures
+simulength_lock = 50 - simulength; %timespan of lockdown measures
 % firstDay = 224;
 % firstDay = 227; %8th Oct
 firstDay = 239; %20th Oct
@@ -57,7 +57,7 @@ k_italy_work = table2array(readtable('contact_matrices_2020/contact_ita_work.csv
 k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
 k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
 k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
-k_italy = k_italy_home + k_italy_work;
+k_italy = k_italy_home;
 
 %Age structured contact matrix after lockdown
 % %Scaling factor due high-schools closing
@@ -67,8 +67,8 @@ k_italy = k_italy_home + k_italy_work;
 % scalar(2,2) = scalar(2,2)*(1/10);
 % k_italy_school = k_italy_school.*scalar;
 % k_italy_school = 0;
-%Scaling factor for in-home reduction of contacts
-% scalar = ones(16)*0.5;
+% % Scaling factor for in-home reduction of contacts
+% scalar = ones(16);
 % scalar = scalar + diag(ones(1,16)*0.5);
 % k_italy_home = scalar.*k_italy_home;
 % k_italy_lock = k_italy_work + k_italy_home + k_italy_school;
