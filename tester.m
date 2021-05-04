@@ -13,39 +13,47 @@ initI_lock = y(lastDay,13:18);
 initA_lock = y(lastDay,19:24);
 initR_lock = y(lastDay,25:30);
 
-[t_lock,y_lock,t_short_lock] = model(simulength_lock, susc, cont_mat_lock, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock, initE_lock, initI_lock, initA_lock, initR_lock, firstDay_lock);
+[t_lock,y_lock,t_short_lock,refin_lock] = model(simulength_lock, susc, cont_mat_lock, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock, initE_lock, initI_lock, initA_lock, initR_lock, firstDay_lock);
+
+lastDay_lock = simulength_lock*refin_lock + simulength_lock + 1;
+initS_lock2 = y_lock(lastDay_lock,1:6);
+initE_lock2 = y_lock(lastDay_lock,7:12);
+initI_lock2 = y_lock(lastDay_lock,13:18);
+initA_lock2 = y_lock(lastDay_lock,19:24);
+initR_lock2 = y_lock(lastDay_lock,25:30);
+
+[t_lock2,y_lock2,t_short_lock2] = model(simulength_lock2, susc, cont_mat_lock2, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock2, initE_lock2, initI_lock2, initA_lock2, initR_lock2, firstDay_lock2);
 
 %Infecteds + correction for detected asymptomatics plot
 k = (table2array(data_table(firstDay,2))-sum(initI))/sum(initA);
 inf_asy_corr = y(:,2*6+(1:6))+k*y(:,3*6+(1:6));
+% inf_asy_corr = y(:,2*6+(1:6));
 inf_asy_corr_lock = y_lock(:,2*6+(1:6))+k*y_lock(:,3*6+(1:6));
+% inf_asy_corr_lock = y_lock(:,2*6+(1:6));
+inf_asy_corr_lock2 = y_lock2(:,2*6 + (1:6))+k*y_lock2(:,3*6+(1:6));
+% inf_asy_corr_lock2 = y_lock2(:,2*6 + (1:6));
+% plot([t;t_lock;t_lock2],sum([inf_asy_corr; inf_asy_corr_lock;inf_asy_corr_lock2],2));
 
-% plot([t; t_lock],sum([inf_asy_corr; inf_asy_corr_lock],2));
-% title('Infected + Asymptomatics')
-% hold on
-% %Real data comparison
-% y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock,2));
-% scatter([t_short t_short_lock(2:end)],y_real)
-% legend({'Model', 'Data'},'Location', 'northeast');
-
+%% Simulation
 %DATE TIMING
 date_t = datetime(2021,02,24) + caldays(firstDay-1);
-date_t = date_t + caldays(0:(simulength + simulength_lock-1));
+date_t = date_t + caldays(0:(simulength + simulength_lock + simulength_lock2-1));
 refin = fix(length(t)/length(t_short));
-inf_asy_corr = inf_asy_corr(refin*((t_short(1:end-1) - firstDay + 1)-1)+1,:);
-inf_asy_corr_lock  = inf_asy_corr_lock(refin*((t_short_lock(1:end-1) - firstDay_lock + 1)-1)+1,:);
+inf_asy_corr = inf_asy_corr((refin+1)*((t_short(1:end-1) - firstDay + 1)-1)+1,:);
+inf_asy_corr_lock  = inf_asy_corr_lock((refin+1)*((t_short_lock(1:end-1) - firstDay_lock + 1)-1)+1,:);
+inf_asy_corr_lock2 = inf_asy_corr_lock2((refin+1)*((t_short_lock2(1:end-1) - firstDay_lock2 + 1)-1)+1,:);
 
 %PLOT SIMULATION
 subplot(2,2,1:2)
 % tiledlayout('flow')
 
 % nexttile
-plot(date_t',sum([inf_asy_corr; inf_asy_corr_lock],2));
+plot(date_t',sum([inf_asy_corr; inf_asy_corr_lock; inf_asy_corr_lock2],2));
 % title('Infected + Asymptomatics')
 hold on
 
 %PLOT REAL DATA
-y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock - 1,2));
+y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock + simulength_lock2 - 1,2));
 scatter(date_t,y_real)
 legend({'Model', 'Data'},'Location', 'northwest');
 
@@ -60,14 +68,14 @@ ylabel('Age group of contact')
 %PLOT AGE-STRATIFIED DATA
 subplot(2,2,4)
 % nexttile
-plot(date_t,[inf_asy_corr; inf_asy_corr_lock]);
+plot(date_t,[inf_asy_corr; inf_asy_corr_lock;inf_asy_corr_lock2]);
 % title('Age-stratified graph')
 legend({'0-19','20-34','35-49','50-59','60-69','70+'},'Location','northwest')
 
 %PEAK SIZE AND PEAK TIME TABLE
 Simulation_type = {'Model'; 'Data'};
-[peak_mod, t_max_mod] = max(sum([inf_asy_corr; inf_asy_corr_lock],2));
-t_tot = [t_short(1:end-1)';t_short_lock(1:end-1)'];
+[peak_mod, t_max_mod] = max(sum([inf_asy_corr; inf_asy_corr_lock;inf_asy_corr_lock2],2));
+t_tot = [t_short(1:end-1)';t_short_lock(1:end-1)';t_short_lock2(1:end-1)'];
 t_max_mod=t_tot(t_max_mod);
 [peak_data, t_max_data] = max(y_real);
 t_max_data = t_max_data+firstDay;
@@ -78,6 +86,9 @@ Peak_Time = [datetime(2020,02,24) + caldays(fix(t_max_mod)); datetime(2020,02,24
 T = table(Simulation_type, Peak_Size, Peak_Time);
 disp(T)
 
+
+
+%% Heatmaps prints
 %%%%%%%%%%%HEATMAPS PRINTS%%%
 
 %%%%Heatmaps for locations

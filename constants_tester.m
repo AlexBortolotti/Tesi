@@ -13,8 +13,8 @@ switch n
         N = readtable('Lombardia-2020.csv');
         seroprev = 754331;
 %         R0 = 2.09;
-%         R0 = 1.77;
-        R0 = 1.60;
+        R0 = 1.95;
+%         R0 = 1.05;
     case 8
         N = readtable('Emilia-2020.csv');
         seroprev = 124458;
@@ -27,8 +27,8 @@ pyramid = table2array(N(:,2));
 agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 
 %%%%%%%%%%%TIME INITIALIZATION%%%
-simulength = 4; %timespan of pre-lockdown measures
-simulength_lock = 21 - simulength; %timespan of lockdown measures
+simulength = 18; %timespan of pre-lockdown measures
+simulength_lock = 38 - simulength; %timespan of lockdown measures
 simulength_lock2 = 60 - simulength_lock - simulength;
 % firstDay = 224;
 % firstDay = 227; %8th Oct
@@ -44,7 +44,7 @@ sieroDay = 142;
 initI = (table2array(data_table(firstDay,2))*0.372)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
 initA = initI.*(1./(1 - [0.1809 0.2279 0.3134 0.398 0.3980 0.8291]));
 %Estimation of new infections after latent period estimate by Gatto et al
-initE = ((table2array(data_table(firstDay + 3, 2)) + table2array(data_table(firstDay + 4, 2)) - 2 * table2array(data_table(firstDay,2)))/2)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
+initE = ((table2array(data_table(firstDay + 5, 2)) + table2array(data_table(firstDay + 4, 2)) - 2 * table2array(data_table(firstDay,2)))/2)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
 %InitR = sierological prevalence at 15th July + recovered from 15 Jul to 1 Sept + dead at 1 Sept
 initR = (seroprev + (table2array(data_table(firstDay,3)) - table2array(data_table(sieroDay,3))) + table2array(data_table(firstDay,4)))*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
 %initS = initial number of susceptibles after considering infecteds and
@@ -61,15 +61,16 @@ k_italy_work = table2array(readtable('contact_matrices_2020/contact_ita_work.csv
 k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv'));
 k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
 k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
-k_italy = k_italy_home/2 + k_italy_school/10 + k_italy_work/10 + k_italy_others/10;
+k_italy = k_italy_home + k_italy_school/10 + k_italy_work/10 + k_italy_others/10;
+% k_italy = k_italy*0.5;
 
 %Age structured contact matrix after lockdown
 %Scaling factor due high-schools closing
-% scalar = ones(16);
-% scalar(3,3) = scalar(3,3)*(1/10);
-% scalar(4,4) = scalar(4,4)*(1/15);
-% scalar(2,2) = scalar(2,2)*(1/10);
-% k_italy_school = k_italy_school.*scalar;
+scalar = ones(16);
+scalar(3,3) = scalar(3,3)*(1/10);
+scalar(4,4) = scalar(4,4)*(1/15);
+scalar(2,2) = scalar(2,2)*(1/10);
+k_italy_school = k_italy_school.*scalar;
 % k_italy_school = 0;
 % % Scaling factor for in-home reduction of contacts
 % scalar = ones(16);
@@ -79,10 +80,13 @@ k_italy = k_italy_home/2 + k_italy_school/10 + k_italy_work/10 + k_italy_others/
 %CONTACT MATRICES FOR RESTRICTION MEASURES
 % k_italy_lock = k_italy_home/2 + k_italy_work/10 + k_italy_others/10;
 % k_italy_lock = k_italy*0.9;
-k_italy_lock = k_italy;
+% k_italy_lock = (k_italy - k_italy_school/8 - k_italy_others/10)*0.7;
+% k_italy_lock = (k_italy-k_italy_school/10-k_italy_others/10)/2;
+k_italy_lock = (k_italy_home/2 + k_italy_school/10 + k_italy_work/15)*0.8;
+% k_italy_lock = k_italy*0.5;
 
 % k_italy_lock2 = k_italy_home/5  + k_italy_work/20 + k_italy_others/30;
-k_italy_lock2 = (k_italy - k_italy_school/10)*0.4;
+k_italy_lock2 = k_italy_lock;
 
 % Contact matrix by Prem (UPDATED: Prem et al is aggregated contact matrix +
 %susceptible population, so we disaggregate the contact matrix from the
@@ -109,7 +113,11 @@ delta_E = 0.3012;
 tau=1/2;
 
 %Probability of developing symptoms by FBK estimates
+% prob_symp = 0.30;
 prob_symp = [0.1809 0.2279 0.3134 0.398 0.398 0.8291]';
+prob_symp = prob_symp.*[1 0.9 0.8 0.7 0.6 0.5]'*0.85;
+% prob_symp = prob_symp.*[1 0.9 0.8 0.7 0.6 0.3]';
+% prob_symp = prob_symp/5;
 
 %Removal rates from Gatto et al
 gamma_cat = 0.0698;
@@ -122,10 +130,10 @@ gammaI = (1/(eta_cat + gamma_cat + alpha_cat))*(gamma_cat^2 + eta_cat*(zeta_cat*
 gammaA = 0.1397;
 
 %Susceptibility Hilton-Keeling
-susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp);
-R = (k_italy_aggr.*((1 - prob_symp).*susc))*(tau/gammaA).*(1-prob_symp');
-corrector = eig(R);
-susc = susc*(R0/corrector(1));
+% susc = ([0.007 0.045 0.07 0.15 0.377 0.52]'./prob_symp);
+% R = (k_italy_aggr.*((1 - prob_symp).*susc))*(tau/gammaA).*(1-prob_symp');
+% corrector = eig(R);
+% susc = susc*(R0/corrector(1));
 % R0 = 1.8;
 % susc = susc*(R0/1.0504);
 
@@ -133,10 +141,10 @@ susc = susc*(R0/corrector(1));
 % initS=initS*0.20;
 
 %OLD/ARCHIVE
-% susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
-% R = (k_italy_aggr.*((1 - prob_symp).*susc))*(tau/gammaA).*(1-prob_symp');
-% corrector = eig(R);
-% susc = susc*(R0/corrector(1));
+susc = R0*((initE')./(((tau/gammaA)*(1-prob_symp)).*((cont_mat.*initS')*(initE'.*(1-prob_symp)))));
+R = (k_italy_aggr.*((1 - prob_symp).*susc))*(tau/gammaA).*(1-prob_symp');
+corrector = eig(R);
+susc = susc*(R0/corrector(1));
 %TEST as Hilton-Keeling
 % susc = (R0*((initI')./((cont_mat.*initS')*(initI'./agg_istat_pyr))))./prob_symp;
 % susc = susc*(2.09/3.06);
