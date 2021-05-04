@@ -30,6 +30,7 @@ agg_istat_pyr = aggregate_pyramid(istat_bds, pyramid);
 simulength = 18; %timespan of pre-lockdown measures
 simulength_lock = 38 - simulength; %timespan of lockdown measures
 simulength_lock2 = 60 - simulength_lock - simulength;
+simulength_final = 120; %timespan for approximating final size
 % firstDay = 224;
 % firstDay = 227; %8th Oct
 firstDay = 239; %20th Oct
@@ -62,15 +63,14 @@ k_italy_home = table2array(readtable('contact_matrices_2020/contact_ita_home.csv
 k_italy_others = table2array(readtable('contact_matrices_2020/contact_ita_others.csv'));
 k_italy_school = table2array(readtable('contact_matrices_2020/contact_ita_school.csv'));
 k_italy = k_italy_home + k_italy_school/10 + k_italy_work/10 + k_italy_others/10;
-% k_italy = k_italy*0.5;
 
 %Age structured contact matrix after lockdown
 %Scaling factor due high-schools closing
-scalar = ones(16);
-scalar(3,3) = scalar(3,3)*(1/10);
-scalar(4,4) = scalar(4,4)*(1/15);
-scalar(2,2) = scalar(2,2)*(1/10);
-k_italy_school = k_italy_school.*scalar;
+% scalar = ones(16);
+% scalar(3,3) = scalar(3,3)*(1/10);
+% scalar(4,4) = scalar(4,4)*(1/15);
+% scalar(2,2) = scalar(2,2)*(1/10);
+% k_italy_school = k_italy_school.*scalar;
 % k_italy_school = 0;
 % % Scaling factor for in-home reduction of contacts
 % scalar = ones(16);
@@ -78,15 +78,15 @@ k_italy_school = k_italy_school.*scalar;
 % k_italy_home = scalar.*k_italy_home;
 
 %CONTACT MATRICES FOR RESTRICTION MEASURES
-% k_italy_lock = k_italy_home/2 + k_italy_work/10 + k_italy_others/10;
-% k_italy_lock = k_italy*0.9;
-% k_italy_lock = (k_italy - k_italy_school/8 - k_italy_others/10)*0.7;
-% k_italy_lock = (k_italy-k_italy_school/10-k_italy_others/10)/2;
-k_italy_lock = (k_italy_home/2 + k_italy_school/10 + k_italy_work/15)*0.8;
-% k_italy_lock = k_italy*0.5;
+k_italy_lock = (k_italy_home/2 + k_italy_work/15)*0.8;
+% k_italy_lock = k_italy_home/10;
+% k_italy_lock = k_italy;
 
-% k_italy_lock2 = k_italy_home/5  + k_italy_work/20 + k_italy_others/30;
-k_italy_lock2 = k_italy_lock;
+k_italy_lock2 = k_italy*0.5;
+% k_italy_lock2 = k_italy_lock;
+%No over 70 contact
+% k_italy_lock2(1:16,15:16) = zeros(16,2);
+% k_italy_lock2(15:16,1:16) = zeros(2,16);
 
 % Contact matrix by Prem (UPDATED: Prem et al is aggregated contact matrix +
 %susceptible population, so we disaggregate the contact matrix from the

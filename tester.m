@@ -22,7 +22,17 @@ initI_lock2 = y_lock(lastDay_lock,13:18);
 initA_lock2 = y_lock(lastDay_lock,19:24);
 initR_lock2 = y_lock(lastDay_lock,25:30);
 
-[t_lock2,y_lock2,t_short_lock2] = model(simulength_lock2, susc, cont_mat_lock2, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock2, initE_lock2, initI_lock2, initA_lock2, initR_lock2, firstDay_lock2);
+[t_lock2,y_lock2,t_short_lock2,refin_lock2] = model(simulength_lock2, susc, cont_mat_lock2, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock2, initE_lock2, initI_lock2, initA_lock2, initR_lock2, firstDay_lock2);
+
+%TEMPORARY for FINAL SIZE
+lastDay_lock2 = simulength_lock2*refin_lock2 + simulength_lock2 + 1;
+initS_final = y_lock2(lastDay_lock2,1:6);
+initE_final = y_lock2(lastDay_lock2,7:12);
+initI_final = y_lock2(lastDay_lock2,13:18);
+initA_final = y_lock2(lastDay_lock2,19:24);
+initR_final = y_lock2(lastDay_lock2,25:30);
+
+[t_final,y_final,t_short_final] = model(simulength_final, susc, cont_mat_lock2, agg_istat_pyr, tau, delta_E, prob_symp, gammaI, gammaA, initS_lock2, initE_lock2, initI_lock2, initA_lock2, initR_lock2, firstDay_lock2);
 
 %Infecteds + correction for detected asymptomatics plot
 k = (table2array(data_table(firstDay,2))-sum(initI))/sum(initA);
@@ -36,7 +46,7 @@ inf_asy_corr_lock2 = y_lock2(:,2*6 + (1:6))+k*y_lock2(:,3*6+(1:6));
 
 %% Simulation
 %DATE TIMING
-date_t = datetime(2021,02,24) + caldays(firstDay-1);
+date_t = datetime(2020,02,24) + caldays(firstDay-1);
 date_t = date_t + caldays(0:(simulength + simulength_lock + simulength_lock2-1));
 refin = fix(length(t)/length(t_short));
 inf_asy_corr = inf_asy_corr((refin+1)*((t_short(1:end-1) - firstDay + 1)-1)+1,:);
@@ -57,9 +67,12 @@ y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock + s
 scatter(date_t,y_real)
 legend({'Model', 'Data'},'Location', 'northwest');
 
+xline(datetime(2020,11,06),'--',{'Strict lockdown'});
+xline(datetime(2020,11,26),'--',{'End'});
+
 %PLOT HEATMAP USED IN SIMULATION
 subplot(2,2,3)
-h = heatmap(k_italy);
+h = heatmap(k_italy_lock);
 h.YDisplayData = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 % title('Schools')
 xlabel('Age group of individual')
@@ -82,11 +95,25 @@ t_max_data = t_max_data+firstDay;
 Peak_Size = [fix(peak_mod); peak_data];
 Peak_Time = [datetime(2020,02,24) + caldays(fix(t_max_mod)); datetime(2020,02,24) + caldays(t_max_data)];
 
-% nexttile
 T = table(Simulation_type, Peak_Size, Peak_Time);
 disp(T)
 
+%% FINAL SIZE
+%Numerical estimate
+N = sum(pyramid);
+final_size = sum(y_final(end,1:6),2)/N;
+%Theoretical estimate
+fun = @(x) exp(R0*(x-1)) - x;
+theoretical_final_size = fzero(fun,0.1);
 
+%Table with result
+disp("Final size presented in form of 'fraction of susceptibles'")
+% Source = {'Theoretical'; 'Simulated'};
+% Final_Size = [theoretical_final_size; final_size];
+Source = ({'Simulated'});
+Final_Size = [final_size];
+T_final = table(Source,Final_Size);
+disp(T_final)
 
 %% Heatmaps prints
 %%%%%%%%%%%HEATMAPS PRINTS%%%
