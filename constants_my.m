@@ -42,7 +42,7 @@ sieroDay = 142;
 %%%%%%%%%%%INITIAL VALUES%%%
 
 %ISS Data
-initI = (table2array(data_table(firstDay,2))*0.372)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
+initI = (table2array(data_table(firstDay,2))*0.294)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
 initA = initI.*(1./(1 - [0.1809 0.2279 0.3134 0.398 0.3980 0.8291]));
 %Estimation of new infections after latent period estimate by Gatto et al
 initE = ((table2array(data_table(firstDay + 5, 2)) + table2array(data_table(firstDay + 4, 2)) - 2 * table2array(data_table(firstDay,2)))/2)*[0.131, 0.148, 0.202, 0.199, 0.133, 0.187];
@@ -82,11 +82,13 @@ k_italy_lock = (k_italy_home/2 + k_italy_work/15)*0.8;
 % k_italy_lock = k_italy_home/10;
 % k_italy_lock = k_italy;
 
-k_italy_lock2 = k_italy*0.5;
-% k_italy_lock2 = k_italy_lock;
+% k_italy_lock2 = k_italy;
+k_italy_lock2 = k_italy_lock;
 %No over 70 contact
 % k_italy_lock2(1:16,15:16) = zeros(16,2);
 % k_italy_lock2(15:16,1:16) = zeros(2,16);
+%Only schools open
+% k_italy_lock2 = (k_italy_home/2 + k_italy_school/10)*0.8;
 
 % Contact matrix by Prem (UPDATED: Prem et al is aggregated contact matrix +
 %susceptible population, so we disaggregate the contact matrix from the
@@ -94,10 +96,10 @@ k_italy_lock2 = k_italy*0.5;
 %w.r.t. appropriate bds)
 k_italy_aggr = aggregate_contact_matrix(k_italy, prem_bds, istat_bds, pyramid);
 cont_mat = dis_coeff(k_italy_aggr,agg_istat_pyr);
-cont_mat_lock = aggregate_contact_matrix(k_italy_lock, prem_bds, istat_bds, pyramid);
-cont_mat_lock = dis_coeff(cont_mat_lock, agg_istat_pyr);
-cont_mat_lock2 = aggregate_contact_matrix(k_italy_lock2, prem_bds, istat_bds, pyramid);
-cont_mat_lock2 = dis_coeff(cont_mat_lock2, agg_istat_pyr);
+k_italy_aggr_lock = aggregate_contact_matrix(k_italy_lock, prem_bds, istat_bds, pyramid);
+cont_mat_lock = dis_coeff(k_italy_aggr_lock, agg_istat_pyr);
+k_italy_aggr_lock2 = aggregate_contact_matrix(k_italy_lock2, prem_bds, istat_bds, pyramid);
+cont_mat_lock2 = dis_coeff(k_italy_aggr_lock2, agg_istat_pyr);
 
 %NO LOCKDOWN
 % k_italy_lock = k_italy;

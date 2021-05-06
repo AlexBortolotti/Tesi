@@ -65,16 +65,18 @@ hold on
 %PLOT REAL DATA
 y_real = table2array(data_table(firstDay:firstDay+simulength+simulength_lock + simulength_lock2 - 1,2));
 scatter(date_t,y_real)
-legend({'Model', 'Data'},'Location', 'northwest');
 
-xline(datetime(2020,11,06),'--',{'Strict lockdown'});
-xline(datetime(2020,11,26),'--',{'End'});
+xline(datetime(2020,11,06),'--k');
+xline(datetime(2020,11,26),'--g');
+
+legend({'Model', 'Data', 'Nov 6th', 'Nov 27th' },'Location', 'northwest');
 
 %PLOT HEATMAP USED IN SIMULATION
 subplot(2,2,3)
-h = heatmap(k_italy_lock);
-h.YDisplayData = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-% title('Schools')
+h = heatmap(k_italy_aggr_lock);
+% h.YDisplayData = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+h.YDisplayData = {6,5,4,3,2,1};
+title('K lock')
 xlabel('Age group of individual')
 ylabel('Age group of contact')
 
